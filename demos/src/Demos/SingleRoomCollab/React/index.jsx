@@ -11,6 +11,7 @@ import React, {
   useState,
 } from 'react'
 import * as Y from 'yjs'
+import FewShotLearning from '../../../../src/utils/FewShotLearning'
 
 const room = 'room-1'
 const colors = ['#958DF1', '#F98181', '#FBBC88', '#FAF594', '#70CFF8', '#94FADB', '#B9F18D']
@@ -64,6 +65,16 @@ const getInitialUser = () => {
 export default () => {
   const [status, setStatus] = useState('connecting')
   const [currentUser, setCurrentUser] = useState(getInitialUser)
+
+  const [fewShotResult, setFewShotResult] = useState(null)
+
+  const handleFewShotLearning = useCallback(() => {
+    const dataset = window.prompt('Enter a small dataset (comma-separated values)').split(',')
+    const fewShot = new FewShotLearning()
+    fewShot.train(dataset)
+    const prediction = fewShot.predict(dataset[0])
+    setFewShotResult(prediction)
+  }, [])
 
   const editor = useEditor({
     extensions: [
@@ -122,8 +133,16 @@ export default () => {
           <div className="editor__name">
             <button onClick={setName}>{currentUser.name}</button>
           </div>
+          <button onClick={handleFewShotLearning}>
+            Run Few-Shot Learning
+          </button>
         </div>
       </div>
+      {fewShotResult && (
+        <div className="few-shot-result">
+          <strong>Prediction:</strong> {fewShotResult}
+        </div>
+      )}
       <EditorContent className="editor__content" editor={editor} />
     </div>
   )

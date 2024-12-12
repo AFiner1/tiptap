@@ -7,6 +7,7 @@ import TaskList from '@tiptap/extension-task-list'
 import { EditorContent, useEditor } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 import React, { useCallback, useEffect, useState } from 'react'
+import FewShotLearning from '../../../../src/utils/FewShotLearning'
 
 const colors = [
   '#958DF1',
@@ -83,6 +84,16 @@ const getInitialUser = () => {
 const Editor = ({ ydoc, provider, room }) => {
   const [status, setStatus] = useState('connecting')
   const [currentUser, setCurrentUser] = useState(getInitialUser)
+
+  const [fewShotResult, setFewShotResult] = useState(null)
+
+  const handleFewShotLearning = useCallback(() => {
+    const dataset = window.prompt('Enter a small dataset (comma-separated values)').split(',')
+    const fewShot = new FewShotLearning()
+    fewShot.train(dataset)
+    const prediction = fewShot.predict(dataset[0])
+    setFewShotResult(prediction)
+  }, [])
 
   const editor = useEditor({
     onCreate: ({ editor: currentEditor }) => {
@@ -178,8 +189,16 @@ const Editor = ({ ydoc, provider, room }) => {
           >
             Code
           </button>
+          <button onClick={handleFewShotLearning}>
+            Run Few-Shot Learning
+          </button>
         </div>
       </div>
+      {fewShotResult && (
+        <div className="few-shot-result">
+          <strong>Prediction:</strong> {fewShotResult}
+        </div>
+      )}
 
       <EditorContent editor={editor} className="main-group" />
 
